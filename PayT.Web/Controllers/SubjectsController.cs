@@ -13,7 +13,7 @@ namespace PayT.Web.Controllers
     [Route("[controller]")]
     public class SubjectsController : ControllerBase
     {
-        private IMediator _mediator;
+        private readonly IMediator _mediator;
 
         public SubjectsController(IMediator mediator)
         {
@@ -26,6 +26,14 @@ namespace PayT.Web.Controllers
             await _mediator.Send(new CreateSubjectCommand(model.Name, model.Amount));
 
             return new CreatedResult(string.Empty, null);
+        }
+
+        [HttpPut("{id}/bills")]
+        public async Task<IActionResult> PayBill(string id, [FromBody] BillForCreationDto model)
+        {
+            await _mediator.Send(new PayBillCommand(new Guid(id), model.Amount));
+
+            return NoContent();
         }
     }
 }

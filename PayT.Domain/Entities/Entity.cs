@@ -14,6 +14,7 @@ namespace PayT.Domain.Entities
         protected Entity()
         {
         }
+
         public Guid Id { get; protected set; }
         public override bool Equals(object obj)
         {

@@ -6,7 +6,7 @@ namespace PayT.Domain.Events
 {
     public abstract class Event : IEvent
     {
-        public Event(Guid aggregateRootId)
+        protected Event(Guid aggregateRootId)
         {
             AggregateRootId = aggregateRootId;
         }

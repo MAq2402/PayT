@@ -35,7 +35,7 @@ namespace PayT.Infrastructure.Repositories
         {
             var events = await _eventStore.ReadEventsAsync(id);
 
-            var aggregateRoot = CreateEmptyAggregateRoot();
+            var aggregateRoot = CreateEmptyAggregateRoot<T>();
 
             foreach(var @event in events)
             {
@@ -45,9 +45,9 @@ namespace PayT.Infrastructure.Repositories
             return aggregateRoot;
         }
 
-        private T CreateEmptyAggregateRoot()
+        private TAggregate CreateEmptyAggregateRoot<TAggregate>() where TAggregate : AggregateRoot
         {
-            return Activator.CreateInstance(default(T).GetType(), true) as T;
+            return (TAggregate)Activator.CreateInstance(typeof(TAggregate), nonPublic: true);
         }
     }
 }

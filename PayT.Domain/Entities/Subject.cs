@@ -9,7 +9,7 @@ namespace PayT.Domain.Entities
     {
         private List<Bill> _bills = new List<Bill>();
 
-        public Subject(Guid id, string name, decimal amount) : base(id)
+        public Subject(Guid id, string name, decimal amount)
         {
             RaiseEvent(new SubjectCreatedEvent(id, name, amount));
         }
@@ -25,13 +25,19 @@ namespace PayT.Domain.Entities
 
         public void Pay(decimal amount)
         {
-            _bills.Add(new Bill(Guid.NewGuid(), amount, DateTime.UtcNow));
+            RaiseEvent(new BillPayedEvent(Id, Guid.NewGuid(), amount, DateTime.UtcNow));
         }
 
         public void On(SubjectCreatedEvent @event)
         {
+            Id = @event.AggregateRootId;
             Name = @event.Name;
             Amount = @event.Amount;
+        }
+
+        public void On(BillPayedEvent @event)
+        {
+            _bills.Add(new Bill(@event.Id, @event.Amount, @event.DateTime));
         }
     }
 }

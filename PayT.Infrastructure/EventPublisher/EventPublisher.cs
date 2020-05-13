@@ -21,9 +21,11 @@ namespace PayT.Infrastructure.EventPublisher
             var handlerType = typeof(IEventHandler<>)
                     .MakeGenericType(@event.GetType());
 
-            dynamic handler = _context.Resolve(handlerType);
-
-            await handler.HandleAsync((dynamic)@event);
+            if (_context.IsRegistered(handlerType))
+            {
+                dynamic handler = _context.Resolve(handlerType);
+                await handler.HandleAsync((dynamic)@event);
+            }
         }
     }
 }

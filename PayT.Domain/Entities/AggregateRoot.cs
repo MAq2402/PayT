@@ -14,7 +14,7 @@ namespace PayT.Domain.Entities
         {
         }
 
-        protected AggregateRoot() : base()
+        protected AggregateRoot()
         {
         }
 

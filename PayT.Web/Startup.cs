@@ -50,9 +50,12 @@ namespace PayT.Web
         {
             builder.RegisterGeneric(typeof(WriteRepository<>)).As(typeof(IWriteRepository<>));
             builder.RegisterType<PayT.Infrastructure.EventStore.EventStore>().As<IEventStore>();
+            builder.RegisterType<EventPublisher>().As<IEventPublisher>();
+
+            RegisterEventHandlers(builder);
         }
 
-        public void RegisterEventHandlers(this ContainerBuilder builder)
+        public void RegisterEventHandlers(ContainerBuilder builder)
         {
             builder.RegisterAssemblyTypes(Assembly.GetAssembly(typeof(SubjectCreatedEventHandler)))
                 .AsClosedTypesOf(typeof(IEventHandler<>));
