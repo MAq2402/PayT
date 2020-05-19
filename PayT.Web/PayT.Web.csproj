@@ -9,6 +9,7 @@
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="6.0.0" />
     <PackageReference Include="MediatR" Version="8.0.1" />
     <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="8.0.0" />
+    <PackageReference Include="MongoDB.Driver" Version="2.10.4" />
     <PackageReference Include="RawRabbit" Version="1.10.4" />
     <PackageReference Include="RawRabbit.vNext" Version="1.10.4" />
   </ItemGroup>

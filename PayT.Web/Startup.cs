@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Autofac;
+using Autofac.Extensions.DependencyInjection;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -15,10 +16,12 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using PayT.Application.Commands;
 using PayT.Application.EventHandlers;
-using PayT.Infrastructure.EventPublisher;
+using PayT.Domain.Events;
+using PayT.Infrastructure.Events;
 using PayT.Infrastructure.EventStore;
 using PayT.Infrastructure.Repositories;
 using PayT.Web.Extensions;
+using RawRabbit;
 
 namespace PayT.Web
 {
@@ -49,15 +52,15 @@ namespace PayT.Web
         public void ConfigureContainer(ContainerBuilder builder)
         {
             builder.RegisterGeneric(typeof(WriteRepository<>)).As(typeof(IWriteRepository<>));
+            builder.RegisterType<ReadRepository>().As<IReadRepository>();
             builder.RegisterType<PayT.Infrastructure.EventStore.EventStore>().As<IEventStore>();
-            builder.RegisterType<EventPublisher>().As<IEventPublisher>();
 
             RegisterEventHandlers(builder);
         }
 
         public void RegisterEventHandlers(ContainerBuilder builder)
         {
-            builder.RegisterAssemblyTypes(Assembly.GetAssembly(typeof(SubjectCreatedEventHandler)))
+            builder.RegisterAssemblyTypes(Assembly.GetAssembly(typeof(InsertSubjectIntoReadModelHandler)))
                 .AsClosedTypesOf(typeof(IEventHandler<>));
         }
 
@@ -69,6 +72,13 @@ namespace PayT.Web
                 app.UseDeveloperExceptionPage();
             }
 
+            var autofacRoot = app.ApplicationServices.GetAutofacRoot();
+
+            if (!(app.ApplicationServices.GetService(typeof(IBusClient)) is IBusClient busClient))
+                throw new NullReferenceException();
+
+            app.SubscribeToEvent<IEvent>(busClient, autofacRoot);
+
             app.UseHttpsRedirection();
 
             app.UseRouting();
@@ -79,6 +89,7 @@ namespace PayT.Web
             {
                 endpoints.MapControllers();
             });
+
         }
     }
 }

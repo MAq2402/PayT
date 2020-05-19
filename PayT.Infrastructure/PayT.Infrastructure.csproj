@@ -7,6 +7,9 @@
   <ItemGroup>
     <PackageReference Include="Autofac" Version="5.1.4" />
     <PackageReference Include="EventStore.Client" Version="5.0.8" />
+    <PackageReference Include="MongoDB.Driver" Version="2.10.4" />
+    <PackageReference Include="RawRabbit" Version="1.10.4" />
+    <PackageReference Include="RawRabbit.vNext" Version="1.10.4" />
   </ItemGroup>
 
   <ItemGroup>

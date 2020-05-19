@@ -1,23 +1,22 @@
 ﻿using PayT.Domain.Entities;
-using PayT.Domain.Repositories;
-using PayT.Infrastructure.EventPublisher;
 using PayT.Infrastructure.EventStore;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using RawRabbit;
 
 namespace PayT.Infrastructure.Repositories
 {
     public class WriteRepository<T> : IWriteRepository<T> where T : AggregateRoot
     {
-        private IEventStore _eventStore;
-        private IEventPublisher _eventPublisher;
+        private readonly IEventStore _eventStore;
+        private readonly IBusClient _busClient;
 
-        public WriteRepository(IEventStore eventStore, IEventPublisher eventPublisher)
+        public WriteRepository(IEventStore eventStore, IBusClient busClient)
         {
             _eventStore = eventStore;
-            _eventPublisher = eventPublisher;
+            _busClient = busClient;
         }
 
         public async Task CommitAsync(T aggregateRoot)
@@ -25,15 +24,15 @@ namespace PayT.Infrastructure.Repositories
             foreach(var @event in aggregateRoot.UncomittedEvents)
             {
                 await _eventStore.WriteEventAsync(@event);
-                await _eventPublisher.PublishAsync(@event);
+                await _busClient.PublishAsync(@event);
             }
 
             aggregateRoot.ClearEvents();
         }
 
-        public async Task<T> GetSingleByIdAsync(Guid id)
+        public async Task<T> GetSingleByIdAsync(Guid aggregateRootId)
         {
-            var events = await _eventStore.ReadEventsAsync(id);
+            var events = await _eventStore.ReadEventsAsync(aggregateRootId);
 
             var aggregateRoot = CreateEmptyAggregateRoot<T>();
 

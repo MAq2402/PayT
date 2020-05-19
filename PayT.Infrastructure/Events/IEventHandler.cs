@@ -4,10 +4,10 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PayT.Infrastructure.EventPublisher
+namespace PayT.Infrastructure.Events
 {
-    public interface IEventPublisher
+    public interface IEventHandler<T> where T : IEvent
     {
-        Task PublishAsync(IEvent @event);
+        Task HandleAsync(T @event);
     }
 }

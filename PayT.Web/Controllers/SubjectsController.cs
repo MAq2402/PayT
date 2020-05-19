@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using PayT.Application.Queries;
 
 namespace PayT.Web.Controllers
 {
@@ -21,7 +22,7 @@ namespace PayT.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateSubject([FromBody] SubjectForCreationDto model)
+        public async Task<IActionResult> CreateSubjectAsync([FromBody] SubjectForCreationDto model)
         {
             await _mediator.Send(new CreateSubjectCommand(model.Name, model.Amount));
 
@@ -29,11 +30,19 @@ namespace PayT.Web.Controllers
         }
 
         [HttpPut("{id}/bills")]
-        public async Task<IActionResult> PayBill(string id, [FromBody] BillForCreationDto model)
+        public async Task<IActionResult> PayBillAsync(string id, [FromBody] BillForCreationDto model)
         {
             await _mediator.Send(new PayBillCommand(new Guid(id), model.Amount));
 
             return NoContent();
+        }
+
+        [HttpGet()]
+        public async Task<IActionResult> GetSubjectsAsync()
+        {
+            var result = await _mediator.Send(new GetSubjectsQuery());
+
+            return Ok(result);
         }
     }
 }
