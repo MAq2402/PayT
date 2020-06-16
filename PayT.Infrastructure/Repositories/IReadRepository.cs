@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
+using PayT.Infrastructure.Types;
 
 namespace PayT.Infrastructure.Repositories
 {
-    public interface IReadRepository
+    public interface IReadRepository<T> where T : IReadModel
     {
-        void InsertOne<T>(T entity);
-        IEnumerable<T> GetAll<T>();
+        Task InsertOneAsync(T entity);
+        Task<IEnumerable<T>> GetAllAsync();
     }
 }

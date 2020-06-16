@@ -12,15 +12,15 @@ namespace PayT.Application.QueryHandlers
 {
     public class GetSubjectsQueryHandler : IRequestHandler<GetSubjectsQuery, IEnumerable<SubjectReadModel>>
     {
-        private IReadRepository _readRepository;
+        private IReadRepository<SubjectReadModel> _readRepository;
 
-        public GetSubjectsQueryHandler(IReadRepository readRepository)
+        public GetSubjectsQueryHandler(IReadRepository<SubjectReadModel> readRepository)
         {
             _readRepository = readRepository;
         }
-        public Task<IEnumerable<SubjectReadModel>> Handle(GetSubjectsQuery request, CancellationToken cancellationToken)
+        public async Task<IEnumerable<SubjectReadModel>> Handle(GetSubjectsQuery request, CancellationToken cancellationToken)
         {
-            return Task.FromResult(_readRepository.GetAll<SubjectReadModel>());
+            return await _readRepository.GetAllAsync();
         }
     }
 }

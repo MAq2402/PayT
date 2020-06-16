@@ -16,10 +16,12 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using PayT.Application.Commands;
 using PayT.Application.EventHandlers;
+using PayT.Application.Repositories;
 using PayT.Domain.Events;
 using PayT.Infrastructure.Events;
 using PayT.Infrastructure.EventStore;
 using PayT.Infrastructure.Repositories;
+using PayT.Web.Dispatchers;
 using PayT.Web.Extensions;
 using RawRabbit;
 
@@ -52,16 +54,24 @@ namespace PayT.Web
         public void ConfigureContainer(ContainerBuilder builder)
         {
             builder.RegisterGeneric(typeof(WriteRepository<>)).As(typeof(IWriteRepository<>));
-            builder.RegisterType<ReadRepository>().As<IReadRepository>();
+            builder.RegisterGeneric(typeof(ReadRepository<>)).As(typeof(IReadRepository<>));
             builder.RegisterType<PayT.Infrastructure.EventStore.EventStore>().As<IEventStore>();
+            builder.RegisterType<EventDispatcher>().As<IEventDispatcher>();
 
             RegisterEventHandlers(builder);
+            RegisterReadRepositories(builder);
         }
 
         public void RegisterEventHandlers(ContainerBuilder builder)
         {
             builder.RegisterAssemblyTypes(Assembly.GetAssembly(typeof(InsertSubjectIntoReadModelHandler)))
                 .AsClosedTypesOf(typeof(IEventHandler<>));
+        }
+        public void RegisterReadRepositories(ContainerBuilder builder)
+        {
+            builder.RegisterAssemblyTypes(Assembly.GetAssembly(typeof(ISubjectReadRepository)))
+                .Where(t => t.Name.EndsWith("Repository"))
+                .AsImplementedInterfaces();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -72,12 +82,7 @@ namespace PayT.Web
                 app.UseDeveloperExceptionPage();
             }
 
-            var autofacRoot = app.ApplicationServices.GetAutofacRoot();
-
-            if (!(app.ApplicationServices.GetService(typeof(IBusClient)) is IBusClient busClient))
-                throw new NullReferenceException();
-
-            app.SubscribeToEvent<IEvent>(busClient, autofacRoot);
+            app.SubscribeToEvents();
 
             app.UseHttpsRedirection();
 

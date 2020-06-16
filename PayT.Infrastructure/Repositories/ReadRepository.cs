@@ -1,38 +1,35 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 using MongoDB.Driver;
 using MongoDB.Bson;
+using PayT.Infrastructure.Types;
 
 namespace PayT.Infrastructure.Repositories
 {
-    public class ReadRepository : IReadRepository
+    public class ReadRepository<T> : IReadRepository<T> where T : IReadModel
     {
-        protected static IMongoClient _client;
-        protected static IMongoDatabase _database;
+        protected readonly IMongoCollection<T> _collection;
 
         public ReadRepository()
         {
-            
+            BsonDefaults.GuidRepresentation = GuidRepresentation.Standard;
+            var client = new MongoClient();
+            var database = client.GetDatabase("PayT");
+            _collection = database.GetCollection<T>("PayT");
         }
 
-        public void InsertOne<T>(T entity)
+        public async Task InsertOneAsync(T entity)
         {
-            _client = new MongoClient();
-            _database = _client.GetDatabase("PayT");
-            var data = _database.GetCollection<T>("PayT");
-            data.InsertOne(entity);
+            await _collection.InsertOneAsync(entity);
         }
 
-        public IEnumerable<T> GetAll<T>()
+        public async Task<IEnumerable<T>> GetAllAsync()
         {
-            _client = new MongoClient();
-            _database = _client.GetDatabase("PayT");
-            var data = _database.GetCollection<T>("PayT");
+            var result = await _collection.FindAsync(new BsonDocument());
 
-            var readAll = data.Find(new BsonDocument());
-
-            return readAll.ToEnumerable();
+            return result.ToEnumerable();
         }
     }
 }

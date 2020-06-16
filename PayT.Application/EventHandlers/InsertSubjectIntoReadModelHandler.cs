@@ -11,23 +11,21 @@ namespace PayT.Application.EventHandlers
 {
     public class InsertSubjectIntoReadModelHandler : IEventHandler<SubjectCreatedEvent>
     {
-        private IReadRepository _readRepository;
+        private readonly IReadRepository<SubjectReadModel> _readRepository;
 
-        public InsertSubjectIntoReadModelHandler(IReadRepository readRepository)
+        public InsertSubjectIntoReadModelHandler(IReadRepository<SubjectReadModel> readRepository)
         {
             _readRepository = readRepository;
         }
 
         public async Task HandleAsync(SubjectCreatedEvent @event)
         {
-            _readRepository.InsertOne(new SubjectReadModel
+            await _readRepository.InsertOneAsync(new SubjectReadModel
             {
                 Id = @event.AggregateRootId,
                 Amount = @event.Amount,
                 Name = @event.Name
             });
-
-            await Task.FromResult(0);
         }
     }
 }

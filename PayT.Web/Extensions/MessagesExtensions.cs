@@ -10,9 +10,11 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Autofac;
+using Autofac.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Builder;
 using PayT.Domain.Events;
 using PayT.Infrastructure.Events;
+using PayT.Web.Dispatchers;
 
 namespace PayT.Web.Extensions
 {
@@ -27,25 +29,19 @@ namespace PayT.Web.Extensions
             services.AddSingleton<IBusClient>(_ => client);
         }
 
-        public static IApplicationBuilder SubscribeToEvent<T>(this IApplicationBuilder app, IBusClient client,
-            ILifetimeScope componentContext)
-            where T : IEvent
+        public static IApplicationBuilder SubscribeToEvents(this IApplicationBuilder app)
         {
-            client
-                .SubscribeAsync<T>(async (msg, context) =>
+            var eventDispatcher = app.ApplicationServices.GetAutofacRoot().Resolve<IEventDispatcher>();
+
+            var busClient = app.ApplicationServices.GetService<IBusClient>();
+
+            busClient
+                .SubscribeAsync<IEvent>(async (@event, context) =>
                 {
-                    var handlerType = typeof(IEventHandler<>)
-                        .MakeGenericType(msg.GetType());
-
-                    var collectionType = typeof(IEnumerable<>).MakeGenericType(handlerType);
-
-                    if (componentContext.IsRegistered(handlerType))
+                    dynamic handlers = eventDispatcher.DispatchMany(@event);
+                    foreach (var handler in handlers)
                     {
-                        dynamic handlers = componentContext.Resolve(collectionType) as IEnumerable;
-                        foreach (var handler in handlers)
-                        {
-                            await handler.HandleAsync((dynamic) msg);
-                        }
+                        await handler.HandleAsync((dynamic)@event);
                     }
                 });
             return app;
