@@ -11,7 +11,7 @@ using PayT.Application.Queries;
 namespace PayT.Web.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class SubjectsController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -24,7 +24,8 @@ namespace PayT.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateSubjectAsync([FromBody] SubjectForCreationDto model)
         {
-            await _mediator.Send(new CreateSubjectCommand(model.Name, model.Amount));
+            await _mediator.Send(new CreateSubjectCommand(
+                string.IsNullOrEmpty(model.Id) ? Guid.NewGuid() : new Guid(model.Id), model.Name, model.Amount));
 
             return new CreatedResult(string.Empty, null);
         }

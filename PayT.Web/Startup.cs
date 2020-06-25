@@ -21,6 +21,7 @@ using PayT.Domain.Events;
 using PayT.Infrastructure.Events;
 using PayT.Infrastructure.EventStore;
 using PayT.Infrastructure.Repositories;
+using PayT.Infrastructure.Types;
 using PayT.Web.Dispatchers;
 using PayT.Web.Extensions;
 using RawRabbit;
@@ -53,9 +54,17 @@ namespace PayT.Web
 
         public void ConfigureContainer(ContainerBuilder builder)
         {
+            var eventStoreConfiguration = Configuration.GetSection("EventStore");
+            var mongoConfiguration = Configuration.GetSection("MongoDb");
+            var appSettings =
+                new Settings(
+                    new EventStoreSettings(eventStoreConfiguration["Stream"], eventStoreConfiguration["Uri"]),
+                    new MongoSettings(mongoConfiguration["DbName"], mongoConfiguration["CollectionName"]));
+
+            builder.Register(context => appSettings).SingleInstance();
             builder.RegisterGeneric(typeof(WriteRepository<>)).As(typeof(IWriteRepository<>));
             builder.RegisterGeneric(typeof(ReadRepository<>)).As(typeof(IReadRepository<>));
-            builder.RegisterType<PayT.Infrastructure.EventStore.EventStore>().As<IEventStore>();
+            builder.RegisterType<Infrastructure.EventStore.EventStore>().As<IEventStore>();
             builder.RegisterType<EventDispatcher>().As<IEventDispatcher>();
 
             RegisterEventHandlers(builder);
@@ -67,6 +76,7 @@ namespace PayT.Web
             builder.RegisterAssemblyTypes(Assembly.GetAssembly(typeof(InsertSubjectIntoReadModelHandler)))
                 .AsClosedTypesOf(typeof(IEventHandler<>));
         }
+
         public void RegisterReadRepositories(ContainerBuilder builder)
         {
             builder.RegisterAssemblyTypes(Assembly.GetAssembly(typeof(ISubjectReadRepository)))
@@ -82,6 +92,8 @@ namespace PayT.Web
                 app.UseDeveloperExceptionPage();
             }
 
+            AutofacContainer = app.ApplicationServices.GetAutofacRoot();
+
             app.SubscribeToEvents();
 
             app.UseHttpsRedirection();
@@ -90,11 +102,7 @@ namespace PayT.Web
 
             app.UseAuthorization();
 
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllers();
-            });
-
+            app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
         }
     }
 }

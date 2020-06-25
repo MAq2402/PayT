@@ -21,7 +21,7 @@ namespace PayT.Application.CommandHandlers
 
         public async Task<Unit> Handle(CreateSubjectCommand request, CancellationToken cancellationToken)
         {
-            var subject = new Subject(Guid.NewGuid(), request.Name, request.Amount);
+            var subject = new Subject(request.Id, request.Name, request.Amount);
             await _subjectRepository.CommitAsync(subject);
 
             return new Unit();

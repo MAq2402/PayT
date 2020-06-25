@@ -6,16 +6,24 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using PayT.Infrastructure.Types;
 
 namespace PayT.Infrastructure.EventStore
 {
     public class EventStore : IEventStore
     {
+        private Settings _settings;
+
+        public EventStore(Settings settings)
+        {
+            _settings = settings;
+        }
+
         public async Task WriteEventAsync(IEvent @event)
         {
-            var conn = EventStoreConnection.Create(new Uri("tcp://admin:changeit@localhost:1113"));
+            var conn = EventStoreConnection.Create(new Uri(_settings.EventStoreSettings.Uri));
             await conn.ConnectAsync();
-            var streamName = "PayTest";
+            var streamName = _settings.EventStoreSettings.Stream;
             var eventType = @event.GetType().ToString();
             var metadata = string.Empty;
             var eventPayload = new EventData(Guid.NewGuid(), eventType, true,
@@ -26,9 +34,9 @@ namespace PayT.Infrastructure.EventStore
 
         public async Task<IEnumerable<IEvent>> ReadEventsAsync(Guid aggregateRootId)
         {
-            var conn = EventStoreConnection.Create(new Uri("tcp://admin:changeit@localhost:1113"));
+            var conn = EventStoreConnection.Create(new Uri(_settings.EventStoreSettings.Uri));
             await conn.ConnectAsync();
-            var streamName = "PayTest";
+            var streamName = _settings.EventStoreSettings.Stream;
 
             var eventStream = await conn.ReadStreamEventsForwardAsync(streamName, 0, 1000, true);
             var result = new List<IEvent>();

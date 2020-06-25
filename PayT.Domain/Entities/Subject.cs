@@ -9,19 +9,18 @@ namespace PayT.Domain.Entities
     {
         private List<Bill> _bills = new List<Bill>();
 
-        public Subject(Guid id, string name, decimal amount)
+        public Subject(Guid? id, string name, decimal amount)
         {
-            RaiseEvent(new SubjectCreatedEvent(id, name, amount));
+            RaiseEvent(new SubjectCreatedEvent(id ?? Guid.NewGuid(), name, amount));
         }
 
         private Subject()
         {
-            
         }
 
         public string Name { get; private set; }
         public decimal Amount { get; private set; }
-        public IEnumerable<Bill> Bils => _bills;
+        public IEnumerable<Bill> Bills => _bills;
 
         public void Pay(decimal amount)
         {

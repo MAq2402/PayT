@@ -1,0 +1,17 @@
+POST https://localhost:44322/subjects HTTP/1.1
+Content-Type: application/json
+
+{
+    "name": "sample",
+    "amount": 5
+}
+
+PUT https://localhost:44322/subjects/af00890e-d347-433e-a77a-0e5087c09849/bills HTTP/1.1
+Content-Type: application/json
+
+{
+    "amount": 5
+}
+
+
+Get https://localhost:44322/subjects
