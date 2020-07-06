@@ -5,15 +5,16 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using RawRabbit;
+using RawRabbit.Context;
 
 namespace PayT.Infrastructure.Repositories
 {
     public class WriteRepository<T> : IWriteRepository<T> where T : AggregateRoot
     {
         private readonly IEventStore _eventStore;
-        private readonly IBusClient _busClient;
+        private readonly IBusClient<AdvancedMessageContext> _busClient;
 
-        public WriteRepository(IEventStore eventStore, IBusClient busClient)
+        public WriteRepository(IEventStore eventStore, IBusClient<AdvancedMessageContext> busClient)
         {
             _eventStore = eventStore;
             _busClient = busClient;
